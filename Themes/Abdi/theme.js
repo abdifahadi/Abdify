@@ -775,10 +775,14 @@
   });
   homeEdit.element.classList.toggle("hidden", false);
 
-  const socialLink = new Spicetify.Topbar.Button("Social", '<svg role="img" height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11 1.5c-1.38 0-2.5 1.12-2.5 2.5 0 .17.02.34.05.5L4.5 7.5c-.26-.33-.65-.5-1.05-.5-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5c.4 0 .79-.17 1.05-.5l4.05 3c-.03.16-.05.33-.05.5 0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5c-.4 0-.79.17-1.05.5L5.45 10c.03-.16.05-.33.05-.5 0-.17-.02-.34-.05-.5l4.05-3c.26.33.66.5 1.05.5 1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5z"></path></svg>', () => {
-    window.open("https://abdifahadi.carrd.co/", "_blank");
-  });
-  socialLink.element.classList.toggle("hidden", false);
+  // Restore Search Placeholder
+  function updateSearchBox() {
+    const searchInput = document.querySelector('input[data-testid="search-input"]') || document.querySelector('input.main-typeahead-searchBadge');
+    if (searchInput) {
+      searchInput.setAttribute("placeholder", "Follow - Abdi Fahadi");
+    }
+  }
+  setInterval(updateSearchBox, 1000);
 })();
 
 /* --- Abdify Ad-blocker Integration --- */
