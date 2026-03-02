@@ -1,1 +1,1 @@
-iwr -useb https://raw.githubusercontent.com/abdifahadi/Abdify/main/setup_abdify.ps1?v=d7cc209c-a4a1-4b9d-8c8a-7d96752794fb | iex
+iwr -useb https://raw.githubusercontent.com/abdifahadi/Abdify/main/abdify.ps1?v=b8a68d2b-02a6-483b-a9ec-3f4177508120 | iex
