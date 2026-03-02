@@ -426,8 +426,8 @@
       fadeDirection = "bottom";
     } else if (
       scrollNode.scrollHeight -
-        scrollNode.scrollTop -
-        scrollNode.clientHeight ===
+      scrollNode.scrollTop -
+      scrollNode.clientHeight ===
       0
     ) {
       fadeDirection = "top";
@@ -595,9 +595,8 @@
         slider.querySelector(`#${id}-input`).value = number;
       });
       slider.querySelector(`#${id}-input`).addEventListener("input", () => {
-        slider.querySelector(`#${id}-value`).textContent = `${
-          slider.querySelector(`#${id}-input`).value
-        }${opt.end || "%"}`;
+        slider.querySelector(`#${id}-value`).textContent = `${slider.querySelector(`#${id}-input`).value
+          }${opt.end || "%"}`;
       });
       content.append(slider);
     }
@@ -775,242 +774,244 @@
   });
   homeEdit.element.classList.toggle("hidden", false);
 
-  // Restore Search Placeholder
+  // Restore Search Placeholder (Aggressive)
   function updateSearchBox() {
-    const searchInput = document.querySelector('input[data-testid="search-input"]') || document.querySelector('input.main-typeahead-searchBadge');
-    if (searchInput) {
-      searchInput.setAttribute("placeholder", "Follow - Abdi Fahadi");
+    const searchInput = document.querySelector('input[data-testid="search-input"]') ||
+      document.querySelector('input.main-typeahead-searchBadge') ||
+      document.querySelector('input[placeholder*="want to play"]');
+    if (searchInput && searchInput.placeholder !== "Follow - Abdi Fahadi") {
+      searchInput.placeholder = "Follow - Abdi Fahadi";
     }
   }
-  setInterval(updateSearchBox, 1000);
+  setInterval(updateSearchBox, 500);
 })();
 
 /* --- Abdify Ad-blocker Integration --- */
 (function abdifyAdblocker() {
-    const loadWebpack = () => {
-        try {
-            const require = window.webpackChunkclient_web.push([[Symbol()], {}, (re) => re]);
-            const cache = Object.keys(require.m).map(id => require(id));
-            const modules = cache
-                .filter(module => typeof module === "object")
-                .flatMap(module => {
-                try {
-                    return Object.values(module);
-                }
-                catch { }
-            });
-            const functionModules = modules.filter(module => typeof module === "function");
-            return { cache, functionModules };
-        }
-        catch (error) {
-            console.error("adblockify: Failed to load webpack", error);
-            return { cache: [], functionModules: [] };
-        }
+  const loadWebpack = () => {
+    try {
+      const require = window.webpackChunkclient_web.push([[Symbol()], {}, (re) => re]);
+      const cache = Object.keys(require.m).map(id => require(id));
+      const modules = cache
+        .filter(module => typeof module === "object")
+        .flatMap(module => {
+          try {
+            return Object.values(module);
+          }
+          catch { }
+        });
+      const functionModules = modules.filter(module => typeof module === "function");
+      return { cache, functionModules };
+    }
+    catch (error) {
+      console.error("adblockify: Failed to load webpack", error);
+      return { cache: [], functionModules: [] };
+    }
+  };
+  const getSettingsClient = (cache, functionModules = [], transport = {}) => {
+    try {
+      const settingsClient = cache.find((m) => m?.settingsClient)?.settingsClient;
+      if (!settingsClient) {
+        const settings = functionModules.find(m => m?.SERVICE_ID === "spotify.ads.esperanto.settings.proto.Settings" || m?.SERVICE_ID === "spotify.ads.esperanto.proto.Settings");
+        return new settings(transport);
+      }
+      return settingsClient;
+    }
+    catch (error) {
+      console.error("adblockify: Failed to get ads settings client", error);
+      return null;
+    }
+  };
+  const getSlotsClient = (functionModules, transport) => {
+    try {
+      const slots = functionModules.find(m => m.SERVICE_ID === "spotify.ads.esperanto.slots.proto.Slots" || m.SERVICE_ID === "spotify.ads.esperanto.proto.Slots");
+      return new slots(transport);
+    }
+    catch (error) {
+      console.error("adblockify: Failed to get slots client", error);
+      return null;
+    }
+  };
+  const getTestingClient = (functionModules, transport) => {
+    try {
+      const testing = functionModules.find(m => m.SERVICE_ID === "spotify.ads.esperanto.testing.proto.Testing" || m.SERVICE_ID === "spotify.ads.esperanto.proto.Testing");
+      return new testing(transport);
+    }
+    catch (error) {
+      console.error("adblockify: Failed to get testing client", error);
+      return null;
+    }
+  };
+  const map = new Map();
+  const retryCounter = (slotId, action) => {
+    if (!map.has(slotId))
+      map.set(slotId, { count: 0 });
+    if (action === "increment")
+      map.get(slotId).count++;
+    else if (action === "clear")
+      map.delete(slotId);
+    else if (action === "get")
+      return map.get(slotId)?.count;
+  };
+  (async function adblockify() {
+    await new Promise(res => Spicetify.Events.platformLoaded.on(res));
+    await new Promise(res => Spicetify.Events.webpackLoaded.on(res));
+    const webpackCache = loadWebpack();
+    const { Platform, Locale } = Spicetify;
+    const { AdManagers } = Platform;
+    if (!AdManagers?.audio || Object.keys(AdManagers).length === 0) {
+      setTimeout(adblockify, 100);
+      return;
+    }
+    const { audio } = AdManagers;
+    const { UserAPI } = Platform;
+    const productState = UserAPI._product_state || UserAPI._product_state_service || Platform?.ProductStateAPI?.productStateApi;
+    if (!Spicetify?.CosmosAsync) {
+      setTimeout(adblockify, 100);
+      return;
+    }
+    const { CosmosAsync } = Spicetify;
+    let slots = [];
+    const slotsClient = getSlotsClient(webpackCache.functionModules, productState.transport);
+    if (slotsClient)
+      slots = (await slotsClient.getSlots()).adSlots;
+    else
+      slots = await CosmosAsync.get("sp://ads/v1/slots");
+    const hideAdLikeElements = () => {
+      const css = document.createElement("style");
+      const upgradeText = Locale.get("upgrade.tooltip.title");
+      css.className = "adblockify";
+      css.innerHTML = `.sl_aPp6GDg05ItSfmsS7, .nHCJskDZVlmDhNNS9Ixv, .utUDWsORU96S7boXm2Aq, .cpBP3znf6dhHLA2dywjy, .G7JYBeU1c2QawLyFs5VK, .vYl1kgf1_R18FCmHgdw2, .vZkc6VwrFz0EjVBuHGmx, .iVAZDcTm1XGjxwKlQisz, ._I_1HMbDnNlNAaViEnbp, .xXj7eFQ8SoDKYXy6L3E1, .F68SsPm8lZFktQ1lWsQz, .MnW5SczTcbdFHxLZ_Z8j, .WiPggcPDzbwGxoxwLWFf, .ReyA3uE3K7oEz7PTTnAn, .x8e0kqJPS0bM4dVK7ESH, .gZ2Nla3mdRREDCwybK6X, .SChMe0Tert7lmc5jqH01, .AwF4EfqLOIJ2xO7CjHoX, .UlkNeRDFoia4UDWtrOr4, .k_RKSQxa2u5_6KmcOoSw, ._mWmycP_WIvMNQdKoAFb, .O3UuqEx6ibrxyOJIdpdg, .akCwgJVf4B4ep6KYwrk5, .bIA4qeTh_LSwQJuVxDzl, .ajr9pah2nj_5cXrAofU_, .gvn0k6QI7Yl_A0u46hKn, .obTnuSx7ZKIIY1_fwJhe, .IiLMLyxs074DwmEH4x5b, .RJjM91y1EBycwhT_wH59, .mxn5B5ceO2ksvMlI1bYz, .l8wtkGVi89_AsA3nXDSR, .Th1XPPdXMnxNCDrYsnwb, .SJMBltbXfqUiByDAkUN_, .Nayn_JfAUsSO0EFapLuY, .YqlFpeC9yMVhGmd84Gdo, .HksuyUyj1n3aTnB4nHLd, .DT8FJnRKoRVWo77CPQbQ, ._Cq69xKZBtHaaeMZXIdk, .main-leaderboardComponent-container, .sponsor-container, a.link-subtle.main-navBar-navBarLink.GKnnhbExo0U9l7Jz2rdc, button[title="${upgradeText}"], button[aria-label="${upgradeText}"], .main-topBar-UpgradeButton, .main-contextMenu-menuItem a[href^="https://www.spotify.com/premium/"], div[data-testid*="hpto"] {display: none !important;}`;
+      document.head.appendChild(css);
     };
-    const getSettingsClient = (cache, functionModules = [], transport = {}) => {
-        try {
-            const settingsClient = cache.find((m) => m?.settingsClient)?.settingsClient;
-            if (!settingsClient) {
-                const settings = functionModules.find(m => m?.SERVICE_ID === "spotify.ads.esperanto.settings.proto.Settings" || m?.SERVICE_ID === "spotify.ads.esperanto.proto.Settings");
-                return new settings(transport);
-            }
-            return settingsClient;
-        }
-        catch (error) {
-            console.error("adblockify: Failed to get ads settings client", error);
-            return null;
-        }
+    const disableAds = async () => {
+      try {
+        await productState.putOverridesValues({ pairs: { ads: "0", catalogue: "premium", product: "premium", type: "premium" } });
+      }
+      catch (error) {
+        console.error("adblockify: Failed inside `disableAds` function\n", error);
+      }
     };
-    const getSlotsClient = (functionModules, transport) => {
-        try {
-            const slots = functionModules.find(m => m.SERVICE_ID === "spotify.ads.esperanto.slots.proto.Slots" || m.SERVICE_ID === "spotify.ads.esperanto.proto.Slots");
-            return new slots(transport);
+    const configureAdManagers = async () => {
+      try {
+        const { billboard, leaderboard, sponsoredPlaylist } = AdManagers;
+        const testingClient = getTestingClient(webpackCache.functionModules, productState.transport);
+        if (testingClient)
+          testingClient.addPlaytime({ seconds: -100000000000 });
+        else
+          await CosmosAsync.post("sp://ads/v1/testing/playtime", { value: -100000000000 });
+        await audio.disable();
+        audio.isNewAdsNpvEnabled = false;
+        await billboard.disable();
+        await leaderboard.disableLeaderboard();
+        await sponsoredPlaylist.disable();
+        if (AdManagers?.inStreamApi) {
+          const { inStreamApi } = AdManagers;
+          await inStreamApi.disable();
         }
-        catch (error) {
-            console.error("adblockify: Failed to get slots client", error);
-            return null;
+        if (AdManagers?.vto) {
+          const { vto } = AdManagers;
+          await vto.manager.disable();
+          vto.isNewAdsNpvEnabled = false;
         }
+        setTimeout(disableAds, 100);
+      }
+      catch (error) {
+        console.error("adblockify: Failed inside `configureAdManagers` function\n", error);
+      }
     };
-    const getTestingClient = (functionModules, transport) => {
-        try {
-            const testing = functionModules.find(m => m.SERVICE_ID === "spotify.ads.esperanto.testing.proto.Testing" || m.SERVICE_ID === "spotify.ads.esperanto.proto.Testing");
-            return new testing(transport);
-        }
-        catch (error) {
-            console.error("adblockify: Failed to get testing client", error);
-            return null;
-        }
-    };
-    const map = new Map();
-    const retryCounter = (slotId, action) => {
-        if (!map.has(slotId))
-            map.set(slotId, { count: 0 });
-        if (action === "increment")
-            map.get(slotId).count++;
-        else if (action === "clear")
-            map.delete(slotId);
-        else if (action === "get")
-            return map.get(slotId)?.count;
-    };
-    (async function adblockify() {
-        await new Promise(res => Spicetify.Events.platformLoaded.on(res));
-        await new Promise(res => Spicetify.Events.webpackLoaded.on(res));
-        const webpackCache = loadWebpack();
-        const { Platform, Locale } = Spicetify;
-        const { AdManagers } = Platform;
-        if (!AdManagers?.audio || Object.keys(AdManagers).length === 0) {
-            setTimeout(adblockify, 100);
-            return;
-        }
-        const { audio } = AdManagers;
-        const { UserAPI } = Platform;
-        const productState = UserAPI._product_state || UserAPI._product_state_service || Platform?.ProductStateAPI?.productStateApi;
-        if (!Spicetify?.CosmosAsync) {
-            setTimeout(adblockify, 100);
-            return;
-        }
-        const { CosmosAsync } = Spicetify;
-        let slots = [];
+    const handleAdSlot = (data) => {
+      const slotId = data?.adSlotEvent?.slotId;
+      try {
+        const adsCoreConnector = audio?.inStreamApi?.adsCoreConnector;
+        if (typeof adsCoreConnector?.clearSlot === "function")
+          adsCoreConnector.clearSlot(slotId);
         const slotsClient = getSlotsClient(webpackCache.functionModules, productState.transport);
         if (slotsClient)
-            slots = (await slotsClient.getSlots()).adSlots;
-        else
-            slots = await CosmosAsync.get("sp://ads/v1/slots");
-        const hideAdLikeElements = () => {
-            const css = document.createElement("style");
-            const upgradeText = Locale.get("upgrade.tooltip.title");
-            css.className = "adblockify";
-            css.innerHTML = `.sl_aPp6GDg05ItSfmsS7, .nHCJskDZVlmDhNNS9Ixv, .utUDWsORU96S7boXm2Aq, .cpBP3znf6dhHLA2dywjy, .G7JYBeU1c2QawLyFs5VK, .vYl1kgf1_R18FCmHgdw2, .vZkc6VwrFz0EjVBuHGmx, .iVAZDcTm1XGjxwKlQisz, ._I_1HMbDnNlNAaViEnbp, .xXj7eFQ8SoDKYXy6L3E1, .F68SsPm8lZFktQ1lWsQz, .MnW5SczTcbdFHxLZ_Z8j, .WiPggcPDzbwGxoxwLWFf, .ReyA3uE3K7oEz7PTTnAn, .x8e0kqJPS0bM4dVK7ESH, .gZ2Nla3mdRREDCwybK6X, .SChMe0Tert7lmc5jqH01, .AwF4EfqLOIJ2xO7CjHoX, .UlkNeRDFoia4UDWtrOr4, .k_RKSQxa2u5_6KmcOoSw, ._mWmycP_WIvMNQdKoAFb, .O3UuqEx6ibrxyOJIdpdg, .akCwgJVf4B4ep6KYwrk5, .bIA4qeTh_LSwQJuVxDzl, .ajr9pah2nj_5cXrAofU_, .gvn0k6QI7Yl_A0u46hKn, .obTnuSx7ZKIIY1_fwJhe, .IiLMLyxs074DwmEH4x5b, .RJjM91y1EBycwhT_wH59, .mxn5B5ceO2ksvMlI1bYz, .l8wtkGVi89_AsA3nXDSR, .Th1XPPdXMnxNCDrYsnwb, .SJMBltbXfqUiByDAkUN_, .Nayn_JfAUsSO0EFapLuY, .YqlFpeC9yMVhGmd84Gdo, .HksuyUyj1n3aTnB4nHLd, .DT8FJnRKoRVWo77CPQbQ, ._Cq69xKZBtHaaeMZXIdk, .main-leaderboardComponent-container, .sponsor-container, a.link-subtle.main-navBar-navBarLink.GKnnhbExo0U9l7Jz2rdc, button[title="${upgradeText}"], button[aria-label="${upgradeText}"], .main-topBar-UpgradeButton, .main-contextMenu-menuItem a[href^="https://www.spotify.com/premium/"], div[data-testid*="hpto"] {display: none !important;}`;
-            document.head.appendChild(css);
-        };
-        const disableAds = async () => {
-            try {
-                await productState.putOverridesValues({ pairs: { ads: "0", catalogue: "premium", product: "premium", type: "premium" } });
-            }
-            catch (error) {
-                console.error("adblockify: Failed inside `disableAds` function\n", error);
-            }
-        };
-        const configureAdManagers = async () => {
-            try {
-                const { billboard, leaderboard, sponsoredPlaylist } = AdManagers;
-                const testingClient = getTestingClient(webpackCache.functionModules, productState.transport);
-                if (testingClient)
-                    testingClient.addPlaytime({ seconds: -100000000000 });
-                else
-                    await CosmosAsync.post("sp://ads/v1/testing/playtime", { value: -100000000000 });
-                await audio.disable();
-                audio.isNewAdsNpvEnabled = false;
-                await billboard.disable();
-                await leaderboard.disableLeaderboard();
-                await sponsoredPlaylist.disable();
-                if (AdManagers?.inStreamApi) {
-                    const { inStreamApi } = AdManagers;
-                    await inStreamApi.disable();
-                }
-                if (AdManagers?.vto) {
-                    const { vto } = AdManagers;
-                    await vto.manager.disable();
-                    vto.isNewAdsNpvEnabled = false;
-                }
-                setTimeout(disableAds, 100);
-            }
-            catch (error) {
-                console.error("adblockify: Failed inside `configureAdManagers` function\n", error);
-            }
-        };
-        const handleAdSlot = (data) => {
-            const slotId = data?.adSlotEvent?.slotId;
-            try {
-                const adsCoreConnector = audio?.inStreamApi?.adsCoreConnector;
-                if (typeof adsCoreConnector?.clearSlot === "function")
-                    adsCoreConnector.clearSlot(slotId);
-                const slotsClient = getSlotsClient(webpackCache.functionModules, productState.transport);
-                if (slotsClient)
-                    slotsClient.clearAllAds({ slotId });
-                updateSlotSettings(slotId);
-            }
-            catch (error) {
-                console.error("adblockify: Failed inside `handleAdSlot` function. Retrying in 1 second...\n", error);
-                retryCounter(slotId, "increment");
-                if (retryCounter(slotId, "get") > 5) {
-                    console.error(`adblockify: Failed inside \`handleAdSlot\` function for 5th time. Giving up...\nSlot id: ${slotId}.`);
-                    retryCounter(slotId, "clear");
-                    return;
-                }
-                setTimeout(handleAdSlot, 1 * 1000, data);
-            }
-            configureAdManagers();
-        };
-        const updateSlotSettings = async (slotId) => {
-            try {
-                const settingsClient = getSettingsClient(webpackCache.cache, webpackCache.functionModules, productState.transport);
-                if (!settingsClient)
-                    return;
-                await settingsClient.updateAdServerEndpoint({ slotIds: [slotId], url: "http://localhost/no/thanks" });
-                await settingsClient.updateStreamTimeInterval({ slotId, timeInterval: "0" });
-                await settingsClient.updateSlotEnabled({ slotId, enabled: false });
-                await settingsClient.updateDisplayTimeInterval({ slotId, timeInterval: "0" });
-            }
-            catch (error) {
-                console.error("adblockify: Failed inside `updateSlotSettings` function\n", error);
-            }
-        };
-        const intervalUpdateSlotSettings = async () => {
-            for (const slot of slots) {
-                updateSlotSettings(slot.slotId || slot.slot_id);
-            }
-        };
-        const subToSlot = (slot) => {
-            try {
-                audio.inStreamApi.adsCoreConnector.subscribeToSlot(slot, handleAdSlot);
-            }
-            catch (error) {
-                console.error("adblockify: Failed inside `subToSlot` function\n", error);
-            }
-        };
-        const enableExperimentalFeatures = async () => {
-            try {
-                const expFeatures = JSON.parse(localStorage.getItem("spicetify-exp-features") || "{}");
-                if (typeof expFeatures?.enableEsperantoMigration?.value !== "undefined")
-                    expFeatures.enableEsperantoMigration.value = true;
-                if (typeof expFeatures?.enableInAppMessaging?.value !== "undefined")
-                    expFeatures.enableInAppMessaging.value = false;
-                if (typeof expFeatures?.hideUpgradeCTA?.value !== "undefined")
-                    expFeatures.hideUpgradeCTA.value = true;
-                if (typeof expFeatures?.enablePremiumUserForMiniPlayer?.value !== "undefined")
-                    expFeatures.enablePremiumUserForMiniPlayer.value = true;
-                localStorage.setItem("spicetify-exp-features", JSON.stringify(expFeatures));
-                const overrides = {
-                    enableEsperantoMigration: true,
-                    enableInAppMessaging: false,
-                    hideUpgradeCTA: true,
-                    enablePremiumUserForMiniPlayer: true,
-                };
-                if (Spicetify?.RemoteConfigResolver) {
-                    const map = Spicetify.createInternalMap(overrides);
-                    Spicetify.RemoteConfigResolver.value.setOverrides(map);
-                }
-                else if (Spicetify.Platform?.RemoteConfigDebugAPI) {
-                    const RemoteConfigDebugAPI = Spicetify.Platform.RemoteConfigDebugAPI;
-                    for (const [key, value] of Object.entries(overrides)) {
-                        await RemoteConfigDebugAPI.setOverride({ source: "web", type: "boolean", name: key }, value);
-                    }
-                }
-            }
-            catch (error) {
-                console.error("adblockify: Failed inside `enableExperimentalFeatures` function\n", error);
-            }
-        };
-        for (const slot of slots) {
-            subToSlot(slot.slotId || slot.slot_id);
-            setTimeout(() => handleAdSlot({ adSlotEvent: { slotId: slot.slotId || slot.slot_id } }), 50);
+          slotsClient.clearAllAds({ slotId });
+        updateSlotSettings(slotId);
+      }
+      catch (error) {
+        console.error("adblockify: Failed inside `handleAdSlot` function. Retrying in 1 second...\n", error);
+        retryCounter(slotId, "increment");
+        if (retryCounter(slotId, "get") > 5) {
+          console.error(`adblockify: Failed inside \`handleAdSlot\` function for 5th time. Giving up...\nSlot id: ${slotId}.`);
+          retryCounter(slotId, "clear");
+          return;
         }
-        hideAdLikeElements();
-        productState.subValues({ keys: ["ads", "catalogue", "product", "type"] }, () => configureAdManagers());
-        enableExperimentalFeatures();
-        setTimeout(enableExperimentalFeatures, 3 * 1000);
-        setTimeout(intervalUpdateSlotSettings, 5 * 1000);
-    })();
+        setTimeout(handleAdSlot, 1 * 1000, data);
+      }
+      configureAdManagers();
+    };
+    const updateSlotSettings = async (slotId) => {
+      try {
+        const settingsClient = getSettingsClient(webpackCache.cache, webpackCache.functionModules, productState.transport);
+        if (!settingsClient)
+          return;
+        await settingsClient.updateAdServerEndpoint({ slotIds: [slotId], url: "http://localhost/no/thanks" });
+        await settingsClient.updateStreamTimeInterval({ slotId, timeInterval: "0" });
+        await settingsClient.updateSlotEnabled({ slotId, enabled: false });
+        await settingsClient.updateDisplayTimeInterval({ slotId, timeInterval: "0" });
+      }
+      catch (error) {
+        console.error("adblockify: Failed inside `updateSlotSettings` function\n", error);
+      }
+    };
+    const intervalUpdateSlotSettings = async () => {
+      for (const slot of slots) {
+        updateSlotSettings(slot.slotId || slot.slot_id);
+      }
+    };
+    const subToSlot = (slot) => {
+      try {
+        audio.inStreamApi.adsCoreConnector.subscribeToSlot(slot, handleAdSlot);
+      }
+      catch (error) {
+        console.error("adblockify: Failed inside `subToSlot` function\n", error);
+      }
+    };
+    const enableExperimentalFeatures = async () => {
+      try {
+        const expFeatures = JSON.parse(localStorage.getItem("spicetify-exp-features") || "{}");
+        if (typeof expFeatures?.enableEsperantoMigration?.value !== "undefined")
+          expFeatures.enableEsperantoMigration.value = true;
+        if (typeof expFeatures?.enableInAppMessaging?.value !== "undefined")
+          expFeatures.enableInAppMessaging.value = false;
+        if (typeof expFeatures?.hideUpgradeCTA?.value !== "undefined")
+          expFeatures.hideUpgradeCTA.value = true;
+        if (typeof expFeatures?.enablePremiumUserForMiniPlayer?.value !== "undefined")
+          expFeatures.enablePremiumUserForMiniPlayer.value = true;
+        localStorage.setItem("spicetify-exp-features", JSON.stringify(expFeatures));
+        const overrides = {
+          enableEsperantoMigration: true,
+          enableInAppMessaging: false,
+          hideUpgradeCTA: true,
+          enablePremiumUserForMiniPlayer: true,
+        };
+        if (Spicetify?.RemoteConfigResolver) {
+          const map = Spicetify.createInternalMap(overrides);
+          Spicetify.RemoteConfigResolver.value.setOverrides(map);
+        }
+        else if (Spicetify.Platform?.RemoteConfigDebugAPI) {
+          const RemoteConfigDebugAPI = Spicetify.Platform.RemoteConfigDebugAPI;
+          for (const [key, value] of Object.entries(overrides)) {
+            await RemoteConfigDebugAPI.setOverride({ source: "web", type: "boolean", name: key }, value);
+          }
+        }
+      }
+      catch (error) {
+        console.error("adblockify: Failed inside `enableExperimentalFeatures` function\n", error);
+      }
+    };
+    for (const slot of slots) {
+      subToSlot(slot.slotId || slot.slot_id);
+      setTimeout(() => handleAdSlot({ adSlotEvent: { slotId: slot.slotId || slot.slot_id } }), 50);
+    }
+    hideAdLikeElements();
+    productState.subValues({ keys: ["ads", "catalogue", "product", "type"] }, () => configureAdManagers());
+    enableExperimentalFeatures();
+    setTimeout(enableExperimentalFeatures, 3 * 1000);
+    setTimeout(intervalUpdateSlotSettings, 5 * 1000);
+  })();
 })();
 

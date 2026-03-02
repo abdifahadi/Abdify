@@ -90,6 +90,17 @@ div.main-globalNav-historyButtonsContainer {
   display: none;
 }
 
+/* ABDIFY FIX: Hide problematic extra topbar buttons */
+.main-topBar-button, .main-globalNav-historyButtonsContainer button {
+    box-shadow: none !important;
+}
+
+/* Hide all custom topbar buttons that might cause issues */
+.main-topBar-button:not([title="Search"]):not([aria-label="Search"]):not([title="Settings"]):not([aria-label="Settings"]):not([title="Upgrade"]),
+.main-globalNav-historyButtonsContainer > div > button:nth-child(n+3) {
+    display: none !important;
+}
+
 /* Fix window resizing breaking spacing */
 :root {
   --zoom: 1 !important;

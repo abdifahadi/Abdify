@@ -1,5 +1,5 @@
-﻿# ---------------------------------------------------------------------------------
-# ABDIFY WORLD (Official Safe Injector) - PRO VERSION 3.2
+# ---------------------------------------------------------------------------------
+# ABDIFY WORLD (Official Safe Injector) - PRO VERSION 3.4
 # ---------------------------------------------------------------------------------
 
 $ErrorActionPreference = "Stop"
@@ -23,7 +23,12 @@ Write-Header
 Write-Part "ABDIFY SETUP:  "; Write-Emphasized "Closing Spotify and repairing core..."
 Stop-Process -Name "Spotify" -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 1
+Write-Done
 
+# CLEANING CACHE
+Write-Part "ABDIFY CLEAN:  "; Write-Emphasized "Clearing old UI data..."
+Remove-Item "$env:LOCALAPPDATA\Spotify\Storage" -Recurse -Force -ErrorAction SilentlyContinue
+Write-Done
 $sp_path = "$env:APPDATA\Spotify"
 $xpui_spa = "$sp_path\Apps\xpui.spa"
 $xpui_bak = "$sp_path\Apps\xpui.spa.bak"
@@ -54,9 +59,14 @@ if (Test-Path $theme_target) { Remove-Item -Recurse -Force $theme_target }
 mkdir -Path $theme_target -Force | Out-Null
 
 $git_raw = "https://raw.githubusercontent.com/abdifahadi/Abdify/main"
-Invoke-WebRequest -Uri "$git_raw/Themes/Abdi/color.ini" -OutFile "$theme_target\color.ini" -UseBasicParsing
-Invoke-WebRequest -Uri "$git_raw/Themes/Abdi/user.css" -OutFile "$theme_target\user.css" -UseBasicParsing
-Invoke-WebRequest -Uri "$git_raw/Themes/Abdi/theme.js" -OutFile "$theme_target\theme.js" -UseBasicParsing
+$themeBase = "$git_raw/Themes/Abdi"
+$v = Get-Random
+
+Invoke-WebRequest -Uri "$themeBase/color.ini" -OutFile "$theme_target\color.ini" -UseBasicParsing
+$customCSS = (Invoke-WebRequest -Uri "$themeBase/user.css?v=$v" -UseBasicParsing).Content
+Set-Content -Path "$theme_target\user.css" -Value $customCSS
+$customJS  = (Invoke-WebRequest -Uri "$themeBase/theme.js?v=$v" -UseBasicParsing).Content
+Set-Content -Path "$theme_target\theme.js" -Value $customJS
 Write-Done
 
 # SILENT APPLY
@@ -71,7 +81,7 @@ Write-Done
 
 Write-Host "---------------------------------------------------" -ForegroundColor "Green"
 Write-Host "   ABDIFY INSTALLED SUCCESSFULLY!   " -ForegroundColor "Green"
-Write-Host "   Version: Official Release 3.3    " -ForegroundColor "White"
+Write-Host "   Version: Official Release 3.4    " -ForegroundColor "White"
 Write-Host "---------------------------------------------------" -ForegroundColor "Green"
 
 Start-Process "$sp_path\Spotify.exe"
