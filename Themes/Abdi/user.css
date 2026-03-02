@@ -1,28 +1,25 @@
-﻿:root {
-  --image_url: none;
-  --blur: 15px;
-  --cont: 50%;
-  --satu: 70%;
-  --bright: 120%;
-  --fade-time: 0.4s;
-}
+﻿/* --- ABDIFY V3.7 HARD UI FIX --- */
 
-/* Base Theme Fixes */
-.Root__top-container { background: #121212 !important; }
-.main-view-container { background: transparent !important; }
-
-/* ABDIFY HARD RESET: Hide everything except standard controls */
-/* This hides the mysterious square button to the left of Home */
-.main-globalNav-historyButtonsContainer > div > button:nth-child(n+3),
-.main-topBar-container button:not([aria-label="Search"]):not([aria-label="Home"]):not([title="Search"]):not([title="Home"]):not([aria-haspopup="menu"]) {
+/* Hide the mysterious box/square button to the left of Home */
+/* Usually this is the 3rd child in the nav container */
+.main-globalNav-historyButtonsContainer > div > button:nth-child(n+3) {
     display: none !important;
     visibility: hidden !important;
     width: 0 !important;
-    margin: 0 !important;
 }
 
-/* Restore Search Placeholder Appearance */
-input[data-testid="search-input"]::placeholder {
-    color: rgba(255, 255, 255, 0.7) !important;
-    opacity: 1 !important;
+/* Hide any topbar button that isn't Home, Search, or User */
+.main-topBar-container button:not([aria-label="Search"]):not([aria-label="Home"]):not([title="Search"]):not([title="Home"]):not([aria-haspopup="menu"]) {
+    display: none !important;
+}
+
+/* Fix "Something went wrong" (usually caused by background overlap) */
+.main-view-container__scroll-node-child {
+    background: transparent !important;
+}
+
+/* Search Placeholder Color */
+input::placeholder {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: bold !important;
 }
