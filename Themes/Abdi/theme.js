@@ -764,7 +764,7 @@
         const issueButton = document.createElement("a");
         issueButton.classList.add("issue-button");
         issueButton.innerHTML = "Developer: Abdi Fahadi";
-        issueButton.href = "https://github.com/abdifahadi";
+        issueButton.href = "https://abdifahadi.carrd.co/";
         issueButton.target = "_blank";
 
         buttonsRow.append(issueButton, resetButton, saveButton);
@@ -780,9 +780,9 @@
         const searchInput = document.querySelector('input[data-testid="search-input"]') ||
             document.querySelector('.main-typeahead-searchBadge input') ||
             document.querySelector('input[placeholder*="want to play"]');
-        if (searchInput && searchInput.placeholder !== "Follow - Abdi Fahadi") {
-            searchInput.placeholder = "Follow - Abdi Fahadi";
-            searchInput.setAttribute("placeholder", "Follow - Abdi Fahadi");
+        if (searchInput && searchInput.placeholder !== "Search Abdify World") {
+            searchInput.placeholder = "Search Abdify World";
+            searchInput.setAttribute("placeholder", "Search Abdify World");
         }
 
         // 2. Hide Extra Topbar Buttons (The Square Button Fix)
