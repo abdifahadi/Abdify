@@ -13,8 +13,7 @@
 ## 🚀 One-Click Installation & Update
 To install or update to **Abdify 10.0**, run this command in **PowerShell**:
 
-`powershell
-iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/install.ps1" | iex
+`iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/install.ps1" | iex
 `
 
 > [!TIP]
@@ -25,8 +24,7 @@ iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/install.ps1"
 ## 🗑️ Professional Uninstallation
 To restore Spotify to its original factory state and re-enable updates:
 
-`powershell
-iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/uninstall.ps1" | iex
+`iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/uninstall.ps1" | iex
 `
 
 ---
