@@ -1,47 +1,29 @@
-﻿(function abdify_v37() {
-    // 1. Force Search Placeholder
-    function fixSearch() {
-        const placeholder = "Follow - Abdi Fahadi";
-        const selectors = [
-            'input[data-testid="search-input"]',
-            '.main-typeahead-searchBadge input',
-            'input[placeholder*="want to play"]',
-            '.Root__globalNav input'
-        ];
-        
-        selectors.forEach(sel => {
-            const el = document.querySelector(sel);
-            if (el && el.placeholder !== placeholder) {
-                el.placeholder = placeholder;
-                el.setAttribute("placeholder", placeholder);
-            }
-        });
-    }
+﻿(function abdify_final() {
+    console.log("Abdify Final Core V4.5 Loaded");
 
-    // 2. Aggressively Hide Extra Buttons
-    function hideBadButtons() {
-        // Hide the blank square button to the left of Home
-        const historyButtons = document.querySelectorAll('.main-globalNav-historyButtonsContainer button');
-        if (historyButtons.length > 2) {
-            for (let i = 2; i < historyButtons.length; i++) {
-                historyButtons[i].style.display = 'none';
-            }
+    function updateUI() {
+        // 1. Force Search Placeholder
+        const searchInput = document.querySelector('input[data-testid="search-input"]') || 
+                          document.querySelector('.main-typeahead-searchBadge input') ||
+                          document.querySelector('input[placeholder*="want to play"]');
+        if (searchInput && searchInput.placeholder !== "Follow - Abdi Fahadi") {
+            searchInput.placeholder = "Follow - Abdi Fahadi";
+            searchInput.setAttribute("placeholder", "Follow - Abdi Fahadi");
         }
 
-        // Hide any button that has no icon or text
-        document.querySelectorAll('button').forEach(btn => {
-            if (btn.classList.contains('main-topBar-button') && !btn.querySelector('svg')) {
-                btn.style.display = 'none';
-            }
-            if (btn.getAttribute('title') === 'Social' || btn.getAttribute('title') === 'Abdi Settings') {
-                btn.style.display = 'none';
+        // 2. Hide problematic buttons
+        const buttons = document.querySelectorAll('button.main-topBar-button, .main-globalNav-historyButtonsContainer button');
+        buttons.forEach(btn => {
+            const label = btn.getAttribute("aria-label") || btn.getAttribute("title") || "";
+            // Hide the extra button (usually blank or titled differently)
+            if (label === "" || label === "Social" || label === "Abdi Settings" || (!btn.querySelector('svg') && !btn.innerText)) {
+                btn.style.display = "none";
+                btn.style.width = "0";
+                btn.style.opacity = "0";
             }
         });
     }
 
-    // Run loops
-    setInterval(fixSearch, 500);
-    setInterval(hideBadButtons, 500);
-    
-    console.log("Abdify V3.7: Stable Mode Activated");
+    // Run aggressively
+    setInterval(updateUI, 500);
 })();
