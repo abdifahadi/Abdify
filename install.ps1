@@ -71,7 +71,7 @@ Write-Done
 
 Write-Host "---------------------------------------------------" -ForegroundColor "Green"
 Write-Host "   ABDIFY INSTALLED SUCCESSFULLY!   " -ForegroundColor "Green"
-Write-Host "   Developer: Abdi Fahadi          " -ForegroundColor "Cyan"
+Write-Host "   Version: Official Release 3.3    " -ForegroundColor "White"
 Write-Host "---------------------------------------------------" -ForegroundColor "Green"
 
 Start-Process "$sp_path\Spotify.exe"
