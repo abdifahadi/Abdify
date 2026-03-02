@@ -2756,3 +2756,19 @@ html:not(.spotify__container--is-desktop.fullscreen) body.windows:not(.video-ful
 .v-title-bar-controls-container button[aria-label="Close"]:hover {
     background-color: rgba(232, 17, 35, 0.9) !important;
 }
+
+/* --- ABDIFY TOPBAR CLEANUP --- */
+/* Hide the extra blank buttons/squares */
+.main-topBar-container button:not([aria-label="Search"]):not([aria-label="Home"]):not([title="Search"]):not([title="Home"]):not(.main-userWidget-box):not(.main-globalNav-historyButtonsContainer button) {
+    display: none !important;
+}
+
+/* Specific fix for history buttons region */
+div.main-globalNav-historyButtonsContainer > div > button:nth-child(n+3) {
+    display: none !important;
+}
+
+/* Fix "Something went wrong" background overlap */
+.main-view-container__scroll-node-child {
+    background: transparent !important;
+}
