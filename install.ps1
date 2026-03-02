@@ -1,5 +1,5 @@
 ﻿# ---------------------------------------------------------------------------------
-# ABDIFY WORLD (Official Safe Injector)
+# ABDIFY WORLD (Official Safe Injector) - PRO VERSION 3.2
 # ---------------------------------------------------------------------------------
 
 $ErrorActionPreference = "Stop"
@@ -11,7 +11,6 @@ function Write-Done { Write-Host " > " -NoNewline; Write-Host "DONE" -Foreground
 
 function Write-Header {
     [Console]::Clear()
-    # Simple ASCII that works everywhere
     Write-Host "---------------------------------------------------" -ForegroundColor "Cyan"
     Write-Host "    A  B  D  I  F  Y    W  O  R  L  D" -ForegroundColor "Cyan"
     Write-Host "      Premium Lightweight Spotify" -ForegroundColor "White"
@@ -29,14 +28,13 @@ $sp_path = "$env:APPDATA\Spotify"
 $xpui_spa = "$sp_path\Apps\xpui.spa"
 $xpui_bak = "$sp_path\Apps\xpui.spa.bak"
 
-# Fix "Something went wrong" if it happened before
 if (Test-Path $xpui_bak) {
     Remove-Item $xpui_spa -Force -ErrorAction SilentlyContinue
     Copy-Item $xpui_bak $xpui_spa -Force
 }
 Write-Done
 
-# DEPLOY ENGINE (Silent)
+# DEPLOY ENGINE
 Write-Part "ABDIFY ENGINE: "; Write-Emphasized "Initializing optimization engine..."
 $engine_dir = "$env:LOCALAPPDATA\Abdify"
 if (Test-Path $engine_dir) { Remove-Item -Recurse -Force $engine_dir }
@@ -48,7 +46,7 @@ Remove-Item "$engine_dir\core.zip"
 Write-Done
 
 # THEME DATA
-Write-Part "ABDIFY THEME:  "; Write-Emphasized "Downloading Abdi design components..."
+Write-Part "ABDIFY THEME:  "; Write-Emphasized "Downloading verified theme files..."
 $config_path = "$env:APPDATA\Abdify_Config"
 if (!(Test-Path $config_path)) { mkdir $config_path | Out-Null }
 $theme_target = "$config_path\Themes\Abdi"
