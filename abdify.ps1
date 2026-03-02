@@ -1,1 +1,0 @@
-iwr -useb https://raw.githubusercontent.com/abdifahadi/Abdify/main/final_fix.ps1 | iex
