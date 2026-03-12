@@ -773,6 +773,7 @@
         Spicetify.PopupModal.display({ title: "Abdi Settings", content });
     });
     homeEdit.element.classList.toggle("hidden", false);
+    homeEdit.element.classList.add("AbdiSettings");
 
     // ABDIFY UI FIXES
     function applyFixes() {
@@ -785,12 +786,27 @@
             searchInput.setAttribute("placeholder", "Search Abdify World");
         }
 
-        // 2. Hide Extra Topbar Buttons (The Square Button Fix)
+        // 2. Hide Extra Topbar Buttons (The 'Update Spicetify' & Marketplace Fix)
+        const updateButtons = document.querySelectorAll('button[aria-label*="Update"], button[title*="Update"], button[aria-label*="Marketplace"], button[title*="Marketplace"]');
+        updateButtons.forEach(btn => {
+            if (btn.innerText.toLowerCase().includes('update') || (btn.ariaLabel && btn.ariaLabel.toLowerCase().includes('update')) || (btn.title && btn.title.toLowerCase().includes('update'))) {
+                btn.style.display = 'none';
+                btn.style.visibility = 'hidden';
+                btn.style.width = '0px';
+                btn.style.height = '0px';
+                btn.style.margin = '0px';
+                btn.style.padding = '0px';
+            }
+        });
+
+        // 3. Force Hide by Container Index
         const historyContainer = document.querySelector('.main-globalNav-historyButtonsContainer > div');
         if (historyContainer) {
             const children = Array.from(historyContainer.children);
             children.forEach((child, index) => {
-                if (index >= 2) {
+                // Keep only Back (0) and Forward (1). Abdi Setting is usually injected safely.
+                // But some extensions inject at index 2, 3 etc.
+                if (index >= 2 && !child.innerText.includes('Abdi Settings')) {
                     child.style.display = 'none';
                 }
             });

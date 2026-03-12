@@ -90,6 +90,22 @@ div.main-globalNav-historyButtonsContainer {
   display: none;
 }
 
+/* DEEP HIDE - Remove Update Spicetify & Extra Buttons */
+button[aria-label*="Update"], 
+button[title*="Update"],
+button[aria-label*="Marketplace"],
+button[title*="Marketplace"],
+.main-globalNav-historyButtonsContainer div > button:nth-child(n+3):not(.AbdiSettings),
+button:has(svg path[d*="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"]) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+}
+
 /* Fix window resizing breaking spacing */
 :root {
   --zoom: 1 !important;
