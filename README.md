@@ -15,15 +15,13 @@
 ## 🚀 Instant Setup
 Copy and paste this command into your **PowerShell** to install or update instantly:
 
-`powershell
-iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/install.ps1" | iex
+`iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/install.ps1" | iex
 `
 
 ## 🛡️ Professional Recovery
 To revert Spotify to its original state and re-enable system updates:
 
-`powershell
-iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/uninstall.ps1" | iex
+`iwr -useb "https://raw.githubusercontent.com/abdifahadi/Abdify/main/uninstall.ps1" | iex
 `
 
 ---
