@@ -1,5 +1,7 @@
 (function abdify() {
-    // --- ABDIFY v2.2 CORE ENGINE ---
+    // --- ABDIFY v2.3 ZERO-DEPENDENCY ENGINE ---
+    // No Spicetify/AbdiEngine required. 100% Standalone.
+
     const injectCSS = (css) => {
         const style = document.createElement('style');
         style.id = 'abdify-core-styles';
@@ -11,15 +13,15 @@
         :root {
             --spice-main: #0A0A0A;
             --spice-text: #FFFFFF;
-            --spice-button: #8CC63E;
             --spice-accent: #8CC63E;
             --backdrop: rgba(0, 0, 0, 0.45);
         }
 
-        /* Essential Transparency for Abdify */
+        /* Full Background Logic */
         .encore-dark-theme, .encore-layout-themes, 
         [class*="main-view-container"], [class*="Root__main-view"],
-        [class*="Root__nav-bar"], [class*="Root__now-playing-bar"] {
+        [class*="Root__nav-bar"], [class*="Root__now-playing-bar"],
+        .main-topBar-background, .main-topBar-overlay {
             background-color: transparent !important;
             background: transparent !important;
         }
@@ -36,11 +38,11 @@
             opacity: 0.55;
             z-index: -1;
             pointer-events: none;
-            transition: background-image 0.6s ease-in-out;
+            transition: background-image 0.8s ease-in-out;
         }
 
-        /* Search & Navigation Tweaks */
-        .main-topBar-searchBar, .x-searchInput-searchInputInput {
+        /* Search Bar & UI Tweak */
+        [class*="searchBar"], .x-searchInput-searchInputInput {
             background-color: rgba(255,255,255,0.1) !important;
             border-radius: 500px !important;
             border: none !important;
@@ -49,42 +51,39 @@
 
     injectCSS(CSS);
 
-    if (typeof AbdiEngine === "undefined") {
-        setTimeout(abdify, 100);
-        return;
-    }
-
-    const { Platform, Player, PopupModal, Topbar } = AbdiEngine;
-
-    // Handle Background Transitions
-    function updateBg(url) {
-        const defaultImg = "https://i.imgur.com/Wl2D0h0.png";
-        const finalUrl = url ? url.replace("spotify:image:", "https://i.scdn.co/image/") : defaultImg;
-        document.documentElement.style.setProperty('--image_url', `url('${finalUrl}')`);
-    }
-
-    Player.addEventListener("songchange", (e) => {
-        updateBg(e.data.item.metadata.image_url);
-    });
-
-    updateBg(); // Initial check
-
-    // Branding Injection
-    const brandUI = () => {
-        const input = document.querySelector(".main-topBar-searchBar, .x-searchInput-searchInputInput");
-        if (input) input.placeholder = "Search in Abdify...";
+    // Dynamic Background Logic (Standalone DOM Observer)
+    const updateBg = () => {
+        const imgEl = document.querySelector('[data-testid="cover-art-image"], .main-nowPlayingWidget-coverExpanded img, .main-coverSlotCollapsed-container img');
+        if (imgEl && imgEl.src) {
+            const url = imgEl.src.replace("spotify:image:", "https://i.scdn.co/image/");
+            document.documentElement.style.setProperty('--image_url', `url('${url}')`);
+        } else {
+            const defaultImg = "https://i.imgur.com/Wl2D0h0.png";
+            document.documentElement.style.setProperty('--image_url', `url('${defaultImg}')`);
+        }
     };
 
-    const obs = new MutationObserver(brandUI);
-    obs.observe(document.body, { childList: true, subtree: true });
-    brandUI();
+    // Branding Update Logic
+    const brandUI = () => {
+        const input = document.querySelector('[class*="searchBar"] input, .x-searchInput-searchInputInput');
+        if (input && input.placeholder !== "Search in Abdify...") {
+            input.placeholder = "Search in Abdify...";
+        }
+        
+        // Update any other text elements if needed
+    };
 
-    new Topbar.Button("Abdify Settings", "edit", () => {
-        PopupModal.display({
-            title: "Abdify Settings",
-            content: "<div><h2 style='color:white'>Welcome to Abdify</h2><p>Running standalone without third-party tools.</p></div>"
-        });
+    // Main Observer Loop
+    const observer = new MutationObserver(() => {
+        brandUI();
+        updateBg();
     });
 
-    console.log("Abdify Standalone Engine Active.");
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    
+    // Initial Run
+    updateBg();
+    brandUI();
+
+    console.log("Abdify v2.3 (Zero-Dependency) started.");
 })();
