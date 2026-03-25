@@ -1,5 +1,5 @@
 (function abdify() {
-    // --- ABDIFY THEME ENGINE (SUPER LIGHTWEIGHT) ---
+    // --- ABDIFY v2.2 CORE ENGINE ---
     const injectCSS = (css) => {
         const style = document.createElement('style');
         style.id = 'abdify-core-styles';
@@ -7,7 +7,7 @@
         document.head.appendChild(style);
     };
 
-    const ABDIFY_CORE_CSS = `
+    const CSS = `
         :root {
             --spice-main: #0A0A0A;
             --spice-text: #FFFFFF;
@@ -16,9 +16,12 @@
             --backdrop: rgba(0, 0, 0, 0.45);
         }
 
-        /* Fully Transparent Abdify UI */
-        .encore-dark-theme, .encore-layout-themes {
-            --background-base: transparent !important;
+        /* Essential Transparency for Abdify */
+        .encore-dark-theme, .encore-layout-themes, 
+        [class*="main-view-container"], [class*="Root__main-view"],
+        [class*="Root__nav-bar"], [class*="Root__now-playing-bar"] {
+            background-color: transparent !important;
+            background: transparent !important;
         }
 
         .Root__top-container::before {
@@ -29,19 +32,22 @@
             background-position: center center;
             position: fixed;
             inset: 0;
-            filter: blur(var(--blur, 15px)) contrast(var(--cont, 50%)) saturate(var(--satu, 70%)) brightness(var(--bright, 120%));
+            filter: blur(15px) contrast(50%) saturate(70%) brightness(120%);
             opacity: 0.55;
             z-index: -1;
             pointer-events: none;
+            transition: background-image 0.6s ease-in-out;
         }
 
-        /* Branding Overrides */
+        /* Search & Navigation Tweaks */
         .main-topBar-searchBar, .x-searchInput-searchInputInput {
+            background-color: rgba(255,255,255,0.1) !important;
             border-radius: 500px !important;
+            border: none !important;
         }
     `;
 
-    injectCSS(ABDIFY_CORE_CSS);
+    injectCSS(CSS);
 
     if (typeof AbdiEngine === "undefined") {
         setTimeout(abdify, 100);
@@ -50,36 +56,35 @@
 
     const { Platform, Player, PopupModal, Topbar } = AbdiEngine;
 
-    function updateBackground(url) {
-        const defaultBg = "https://i.imgur.com/Wl2D0h0.png";
-        const finalUrl = url ? url.replace("spotify:image:", "https://i.scdn.co/image/") : defaultBg;
+    // Handle Background Transitions
+    function updateBg(url) {
+        const defaultImg = "https://i.imgur.com/Wl2D0h0.png";
+        const finalUrl = url ? url.replace("spotify:image:", "https://i.scdn.co/image/") : defaultImg;
         document.documentElement.style.setProperty('--image_url', `url('${finalUrl}')`);
     }
 
     Player.addEventListener("songchange", (e) => {
-        updateBackground(e.data.item.metadata.image_url);
+        updateBg(e.data.item.metadata.image_url);
     });
 
-    // Initial Load
-    updateBackground();
+    updateBg(); // Initial check
 
-    // Search Placeholder Implementation (Abdify Branding)
-    const applyPlaceholder = () => {
+    // Branding Injection
+    const brandUI = () => {
         const input = document.querySelector(".main-topBar-searchBar, .x-searchInput-searchInputInput");
         if (input) input.placeholder = "Search in Abdify...";
     };
 
-    const observer = new MutationObserver(applyPlaceholder);
-    observer.observe(document.body, { childList: true, subtree: true });
-    applyPlaceholder();
+    const obs = new MutationObserver(brandUI);
+    obs.observe(document.body, { childList: true, subtree: true });
+    brandUI();
 
-    // Abdify Settings Button
     new Topbar.Button("Abdify Settings", "edit", () => {
         PopupModal.display({
-            title: "Abdify Theme Settings",
-            content: "<div><p>Welcome to Abdify by Abdifahadi.</p></div>"
+            title: "Abdify Settings",
+            content: "<div><h2 style='color:white'>Welcome to Abdify</h2><p>Running standalone without third-party tools.</p></div>"
         });
     });
 
-    console.log("Abdify Engine Started Successfully.");
+    console.log("Abdify Standalone Engine Active.");
 })();

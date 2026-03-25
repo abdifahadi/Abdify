@@ -1,29 +1,43 @@
-# --- Abdify Theme Official Installer ---
-# Version: 2.1
+# --- Abdify Theme Official Remote Installer ---
+# Version: 2.2
 param ( [string] $version )
 
-Write-Host "Initializing Abdify (Lightweight)..." -ForegroundColor Cyan
+$RepoBase = "https://raw.githubusercontent.com/abdifahadi/Abdify/main"
+$AppPath = "$env:APPDATA\Spotify\Apps\xpui"
 
-# Define the target OS path (Keep hidden from branding)
-$Root = "$env:APPDATA\Spotify\Apps\xpui"
+Write-Host "Initializing Abdify Remote Setup..." -ForegroundColor Cyan
 
-if (!(Test-Path $Root)) {
-    Write-Host "Error: Abdify Core not found. Please install the Abdify engine first." -ForegroundColor Red
+# 1. Validation
+if (!(Test-Path $AppPath)) {
+    Write-Host "Error: Spotify XPUI was not found. Please open Spotify once and close it before running this script." -ForegroundColor Red
     return
 }
 
-# 1. Copy Master Theme JS
-Write-Host "Deploying Abdify Core Engine..." -ForegroundColor Yellow
-Copy-Item ".\abdi_engine.js" "$Root\abdi_engine.js" -Force
-Copy-Item ".\abdify.js" "$Root\abdify.js" -Force
-Copy-Item ".\user.css" "$Root\abdify.css" -Force
+# 2. Downloading Core Components from GitHub
+Write-Host "Fetching Abdify Core from Repository..." -ForegroundColor Yellow
 
-# 2. Patch index.html (Clean & Direct)
-$htmlPath = "$Root\index.html"
+$files = @("abdi_engine.js", "abdify.js", "user.css")
+
+foreach ($file in $files) {
+    $targetFile = Join-Path $AppPath $file
+    $downloadUrl = "$RepoBase/$file"
+    Write-Host "Downloading $file..." -NoNewline
+    try {
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $targetFile -UseBasicParsing
+        Write-Host " [Done]" -ForegroundColor Green
+    } catch {
+        Write-Host " [Failed]" -ForegroundColor Red
+        Write-Host "Error details: $_"
+    }
+}
+
+# 3. Patching Host Interface (index.html)
+Write-Host "Patching Application Shell..." -ForegroundColor Yellow
+$htmlPath = Join-Path $AppPath "index.html"
 $html = Get-Content $htmlPath -Raw
 
-# Remove any old branding and inject Abdify
-$html = $html -replace "<!--.*?-->", "" # Clean comments
+# Clean old entries
+$html = $html -replace "<!--.*?-->", "" # Remove comments
 $html = $html -replace "<script src='abdify_engine.js'></script>", ""
 $html = $html -replace "<script src='abdify.js' defer></script>", ""
 $html = $html -replace "<script src='abdi_engine.js'></script>", ""
@@ -36,5 +50,5 @@ if ($html -notmatch "abdi_engine.js") {
 
 Set-Content $htmlPath $html
 
-Write-Host "Abdify is now READY! Restart to see the magic." -ForegroundColor Green
-Write-Host "Standalone Abdify Implementation Success." -ForegroundColor Gray
+Write-Host "`nAbdify has been successfully installed!" -ForegroundColor Green
+Write-Host "Please restart Spotify to see the transformation." -ForegroundColor Gray
