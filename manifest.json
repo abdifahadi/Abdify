@@ -1,0 +1,14 @@
+{
+  "name": "Abdi",
+  "description": "An Abdi spicetify theme",
+  "preview": "abdi_home.png",
+  "readme": "README.md",
+  "usercss": "user.css",
+  "authors": [
+    {
+      "name": "Abdi",
+      "url": "https://github.com/Astromations"
+    }
+  ],
+  "tags": ["dark", "transparent", "abdi"]
+}
