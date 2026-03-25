@@ -1,37 +1,40 @@
 # --- Abdify Theme Official Installer ---
+# Version: 2.1
 param ( [string] $version )
 
-Write-Host "Initialing Abdify (Lightweight Pack)..." -ForegroundColor Cyan
+Write-Host "Initializing Abdify (Lightweight)..." -ForegroundColor Cyan
 
-$spotifyPath = "$env:APPDATA\Spotify\Apps\xpui"
-$localSpicetify = "$env:LOCALAPPDATA\spicetify"
+# Define the target OS path (Keep hidden from branding)
+$Root = "$env:APPDATA\Spotify\Apps\xpui"
 
-if (!(Test-Path $spotifyPath)) {
-    Write-Host "Error: Spotify XPUI not found. Please install Spicetify first to unlock Spotify files." -ForegroundColor Red
+if (!(Test-Path $Root)) {
+    Write-Host "Error: Abdify Core not found. Please install the Abdify engine first." -ForegroundColor Red
     return
 }
 
 # 1. Copy Master Theme JS
-Write-Host "Deploying Core Engine..." -ForegroundColor Yellow
-Copy-Item ".\theme.js" "$spotifyPath\theme.js" -Force
+Write-Host "Deploying Abdify Core Engine..." -ForegroundColor Yellow
+Copy-Item ".\abdi_engine.js" "$Root\abdi_engine.js" -Force
+Copy-Item ".\abdify.js" "$Root\abdify.js" -Force
+Copy-Item ".\user.css" "$Root\abdify.css" -Force
 
-# 2. Patch index.html (Zero-Dependency Method)
-$htmlPath = "$spotifyPath\index.html"
+# 2. Patch index.html (Clean & Direct)
+$htmlPath = "$Root\index.html"
 $html = Get-Content $htmlPath -Raw
 
-# Ensure Spicetify Wrapper is present (required for the engine)
-if ($html -notmatch "spicetifyWrapper.js") {
-    # If not found, we assume user hasn't run 'spicetify backup'. 
-    # But usually, they should have. We will append it before body.
-    $html = $html.Replace("</body>", "<script src='helper/spicetifyWrapper.js'></script><script src='theme.js' defer></script></body>")
-} elseif ($html -notmatch "theme.js") {
-    $html = $html.Replace("</body>", "<script src='theme.js' defer></script></body>")
-}
+# Remove any old branding and inject Abdify
+$html = $html -replace "<!--.*?-->", "" # Clean comments
+$html = $html -replace "<script src='abdify_engine.js'></script>", ""
+$html = $html -replace "<script src='abdify.js' defer></script>", ""
+$html = $html -replace "<script src='abdi_engine.js'></script>", ""
+$html = $html -replace "<script src='abdi.js' defer></script>", ""
 
-# Clean marketplace and heavy apps from previous patches
-$html = $html -replace "<!-- spicetify helpers -->[\s\S]*?<script src='theme.js' defer></script>", "<script src='theme.js' defer></script>"
+# Fresh injection before closing body
+if ($html -notmatch "abdi_engine.js") {
+    $html = $html.Replace("</body>", "<script src='abdi_engine.js'></script><script src='abdify.js' defer></script></body>")
+}
 
 Set-Content $htmlPath $html
 
-Write-Host "Abdify is now READY! Restart Spotify to see the magic." -ForegroundColor Green
-Write-Host "Note: This is a lightweight installation. No marketplace or heavy extensions were added." -ForegroundColor Gray
+Write-Host "Abdify is now READY! Restart to see the magic." -ForegroundColor Green
+Write-Host "Standalone Abdify Implementation Success." -ForegroundColor Gray
