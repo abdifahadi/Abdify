@@ -1,5 +1,5 @@
-# --- Abdify Theme Ultimate Standalone Installer ---
-# Version: 2.3 (Zero-Dependency)
+# --- Abdify Theme Ultimate [NON-STOP] Installer ---
+# Version: 2.3.1 (Zero-Dependency)
 param ( [string] $version )
 
 $RepoBase = "https://raw.githubusercontent.com/abdifahadi/Abdify/main"
@@ -7,52 +7,44 @@ $SpotifyRoot = "$env:APPDATA\Spotify\Apps"
 $AppPath = Join-Path $SpotifyRoot "xpui"
 $SpaPath = Join-Path $SpotifyRoot "xpui.spa"
 
-Write-Host "Initializing Abdify v2.3..." -ForegroundColor Cyan
+Write-Host "Initializing Abdify v2.3.1 [Standalone Patch]..." -ForegroundColor Cyan
 
-# 1. Handle Locked Files (Extraction Logic)
+# 1. Ensure Files are Unlocked
 if (!(Test-Path $AppPath)) {
     if (Test-Path $SpaPath) {
-        Write-Host "Spotify files are locked (.spa). Unlocking now..." -ForegroundColor Yellow
+        Write-Host "Unlocking Spotify files..." -ForegroundColor Yellow
         $tempZip = Join-Path $SpotifyRoot "xpui.zip"
         Copy-Item $SpaPath $tempZip -Force
         Expand-Archive -Path $tempZip -DestinationPath $AppPath -Force
         Remove-Item $tempZip -Force
-        # Rename original spa to prevent Spotify from ignoring our folder
         Move-Item $SpaPath "$SpaPath.bak" -Force
-        Write-Host "Successfully unlocked Spotify interface." -ForegroundColor Green
     } else {
-        Write-Host "Error: Spotify installation not found." -ForegroundColor Red
+        Write-Host "Error: Spotify not found." -ForegroundColor Red
         return
     }
 }
 
-# 2. Downloading Standalone Components from GitHub
-Write-Host "Fetching Abdify v2.3 Core..." -ForegroundColor Yellow
-$files = @("abdify.js", "user.css")
+# 2. Download Final Component
+Write-Host "Downloading Abdify v2.3.1 Core..." -ForegroundColor Yellow
+$targetFile = Join-Path $AppPath "abdify.js"
+Invoke-WebRequest -Uri "$RepoBase/abdify.js" -OutFile $targetFile -UseBasicParsing -Headers @{"Cache-Control"="no-cache"}
+Write-Host "Abdify core downloaded." -ForegroundColor Green
 
-foreach ($file in $files) {
-    $targetFile = Join-Path $AppPath $file
-    $downloadUrl = "$RepoBase/$file"
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $targetFile -UseBasicParsing
-}
-
-# 3. Patching Host Interface (index.html)
-Write-Host "Patching Interface Shell..." -ForegroundColor Yellow
+# 3. Ultimate Patching (index.html)
 $htmlPath = Join-Path $AppPath "index.html"
 $html = Get-Content $htmlPath -Raw
 
-# Remove all traces of previous engines/themes
+# Clean ALL previous script tags and engines
 $html = $html -replace "<script src='abdify.js'.*?></script>", ""
 $html = $html -replace "<script src='abdi_engine.js'.*?></script>", ""
 $html = $html -replace "<script src='helper/.*?js'.*?></script>", ""
 
-# Clean injection of the Standalone theme
+# Inject ONLY our Zero-Dependency abdify.js
 if ($html -notmatch "abdify.js") {
     $html = $html.Replace("</body>", "<script src='abdify.js' defer></script></body>")
 }
 
 Set-Content $htmlPath $html
 
-Write-Host "`nAbdify v2.3 was successfully installed!" -ForegroundColor Green
-Write-Host "The theme is now 100% STANDALONE. No Spicetify required." -ForegroundColor White
-Write-Host "Please restart Spotify now." -ForegroundColor Gray
+Write-Host "`nSUCCESS: Abdify v2.3.1 is now running Standalone!" -ForegroundColor Green
+Write-Host "Please restart Spotify." -ForegroundColor White

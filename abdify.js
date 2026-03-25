@@ -1,6 +1,8 @@
 (function abdify() {
-    // --- ABDIFY v2.3 ZERO-DEPENDENCY ENGINE ---
-    // No Spicetify/AbdiEngine required. 100% Standalone.
+    // --- ABDIFY v2.3 [TRUE ZERO-DEPENDENCY] ---
+    // No Spicetify / No External Engine Needed.
+    
+    console.log("Abdify v2.3 [Zero-Engine] Initializing...");
 
     const injectCSS = (css) => {
         const style = document.createElement('style');
@@ -9,7 +11,7 @@
         document.head.appendChild(style);
     };
 
-    const CSS = `
+    const TRULY_STANDALONE_CSS = `
         :root {
             --spice-main: #0A0A0A;
             --spice-text: #FFFFFF;
@@ -17,15 +19,17 @@
             --backdrop: rgba(0, 0, 0, 0.45);
         }
 
-        /* Full Background Logic */
+        /* Forces Transparency on EVERY layer */
         .encore-dark-theme, .encore-layout-themes, 
-        [class*="main-view-container"], [class*="Root__main-view"],
-        [class*="Root__nav-bar"], [class*="Root__now-playing-bar"],
-        .main-topBar-background, .main-topBar-overlay {
+        .Root__top-container, .Root__main-view, .Root__nav-bar, .Root__now-playing-bar,
+        .main-topBar-background, .main-topBar-overlay,
+        [class*="main-view-container"], [class*="under-main-view"], 
+        .main-view-container__scroll-node, [class*="Root__content-wrapper"] {
             background-color: transparent !important;
             background: transparent !important;
         }
 
+        /* The Animated Background */
         .Root__top-container::before {
             content: "";
             background-image: var(--image_url);
@@ -34,56 +38,50 @@
             background-position: center center;
             position: fixed;
             inset: 0;
-            filter: blur(15px) contrast(50%) saturate(70%) brightness(120%);
-            opacity: 0.55;
+            filter: blur(20px) contrast(50%) saturate(80%) brightness(130%);
+            opacity: 0.6;
             z-index: -1;
             pointer-events: none;
-            transition: background-image 0.8s ease-in-out;
+            transition: background-image 1s ease-in-out;
         }
 
-        /* Search Bar & UI Tweak */
-        [class*="searchBar"], .x-searchInput-searchInputInput {
+        /* Global UI Improvements */
+        .main-topBar-searchBar, .x-searchInput-searchInputInput {
             background-color: rgba(255,255,255,0.1) !important;
             border-radius: 500px !important;
             border: none !important;
+            padding-left: 15px !important;
         }
     `;
 
-    injectCSS(CSS);
+    // Inject Styles Immediately
+    injectCSS(TRULY_STANDALONE_CSS);
 
-    // Dynamic Background Logic (Standalone DOM Observer)
-    const updateBg = () => {
-        const imgEl = document.querySelector('[data-testid="cover-art-image"], .main-nowPlayingWidget-coverExpanded img, .main-coverSlotCollapsed-container img');
-        if (imgEl && imgEl.src) {
-            const url = imgEl.src.replace("spotify:image:", "https://i.scdn.co/image/");
-            document.documentElement.style.setProperty('--image_url', `url('${url}')`);
-        } else {
-            const defaultImg = "https://i.imgur.com/Wl2D0h0.png";
-            document.documentElement.style.setProperty('--image_url', `url('${defaultImg}')`);
-        }
-    };
-
-    // Branding Update Logic
-    const brandUI = () => {
-        const input = document.querySelector('[class*="searchBar"] input, .x-searchInput-searchInputInput');
+    // Dynamic Logic (Stand-Alone)
+    function updateLayout() {
+        // Search Bar Placeholder
+        const input = document.querySelector(".main-topBar-searchBar, .x-searchInput-searchInputInput");
         if (input && input.placeholder !== "Search in Abdify...") {
             input.placeholder = "Search in Abdify...";
         }
-        
-        // Update any other text elements if needed
-    };
 
-    // Main Observer Loop
-    const observer = new MutationObserver(() => {
-        brandUI();
-        updateBg();
-    });
+        // Image Detection (Stand-Alone)
+        const img = document.querySelector('[data-testid="cover-art-image"], .main-nowPlayingWidget-coverExpanded img, .main-coverSlotCollapsed-container img');
+        if (img && img.src) {
+            const url = img.src.replace("spotify:image:", "https://i.scdn.co/image/");
+            if (document.documentElement.style.getPropertyValue('--image_url') !== \`url('\${url}')\`) {
+                document.documentElement.style.setProperty('--image_url', \`url('\${url}')\`);
+            }
+        } else if (!document.documentElement.style.getPropertyValue('--image_url')) {
+            const def = "https://i.imgur.com/Wl2D0h0.png";
+            document.documentElement.style.setProperty('--image_url', \`url('\${def}')\`);
+        }
+    }
 
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    // High Performance Loop
+    const obs = new MutationObserver(updateLayout);
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true });
     
-    // Initial Run
-    updateBg();
-    brandUI();
-
-    console.log("Abdify v2.3 (Zero-Dependency) started.");
+    updateLayout();
+    console.log("Abdify v2.3 [Zero-Engine] Running.");
 })();
